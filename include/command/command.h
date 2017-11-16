@@ -15,24 +15,25 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program, if not, see <http://www.gnu.org/licenses/>.
 
-// @CleanUp
+#pragma once
 
+#define MAX_LINE_SIZE (1 << 10)
+
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <inttypes.h>
 
-#include "file/file.h"
-#include "command/command.h"
 
-// @TODO add doc
+static uint32_t kids;
 
-int main(int argc, char** argv){
+void initCommander();
 
-	initCommander();
+void printPointer();
 
-	while(1){
-		printPointer();
-		waitInput();
-		waitForKids();
-	}
+void waitForKids();
 
-	return 0;
-}
+void waitInput();
+
+uint32_t getKids();
+

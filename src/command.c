@@ -15,24 +15,47 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program, if not, see <http://www.gnu.org/licenses/>.
 
-// @CleanUp
-
-#include <string.h>
-
-#include "file/file.h"
 #include "command/command.h"
 
-// @TODO add doc
+void initCommander(){
+	kids = 0;
+}
 
-int main(int argc, char** argv){
+void printPointer(){
+	printf("\n$> ");
+}
 
-	initCommander();
+void waitInput(){
+	char* buf = (char*)malloc(sizeof(char) * MAX_LINE_SIZE);
 
-	while(1){
-		printPointer();
-		waitInput();
-		waitForKids();
+	fgets(buf, MAX_LINE_SIZE, stdin);
+
+	parseCommand(buf);
+
+	free(buf);
+}
+
+void parseCommand(const char* cmd){
+
+	char* tmp = cmd;
+	int checker = 0;
+
+	while(tmp = strstr(tmp, " ")){
+		checker++;
+		tmp++;
 	}
+	// @TODO if has at least one space we have a command, yey, implement this
+	printf("%d\n", checker);
 
-	return 0;
+}
+
+void waitForKids(){
+	if (getKids() > 0){
+		int i = 0;
+		for(; i < getKids(); i++) wait();
+	}
+}
+
+uint32_t getKids(){
+	return kids;
 }
