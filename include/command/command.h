@@ -15,14 +15,15 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program, if not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#ifndef COMMAND_H
+#define COMMAND_H
 
 #define MAX_LINE_SIZE (1 << 10)
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
-#include <inttypes.h>
 
 
 static uint32_t kids;
@@ -37,3 +38,4 @@ void waitInput();
 
 uint32_t getKids();
 
+#endif COMMAND_H

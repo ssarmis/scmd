@@ -14,14 +14,16 @@
 //
 //	You should have received a copy of the GNU General Public License
 //	along with this program, if not, see <http://www.gnu.org/licenses/>.
-#pragma once
+
+#ifndef FILE_H
+#define FILE_H
 
 #define MAX_FILE_SIZE 	((1 << 10) * 10)
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <unistd.h>
-#include <inttypes.h>
 #include <fcntl.h>
 #include <errno.h>
 
@@ -50,3 +52,4 @@ void closef(file* f);
 
 void dumpf(const file* f);
 
+#endif FILE_H
