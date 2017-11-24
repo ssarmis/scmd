@@ -52,4 +52,4 @@ void closef(file* f);
 
 void dumpf(const file* f);
 
-#endif FILE_H
+#endif // FILE_H

@@ -15,8 +15,8 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program, if not, see <http://www.gnu.org/licenses/>.
 
-#ifndef COMMAND_H
-#define COMMAND_H
+#ifndef COMMAND_LIST_H
+#define COMMAND_LIST_H
 
 #define MAX_LINE_SIZE (1 << 10)
 
@@ -24,25 +24,13 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <unistd.h>
-#include <termios.h>
 
-#include "history.h"
 #include "commandlist.h"
+#include "history.h"
+// #include "../file/file.h"
 
 
-static uint32_t kids;
+void commandExit();
 
-void initCommander();
 
-void printPointer();
-
-void waitForKids();
-
-void waitInput();
-
-uint32_t getKids();
-
-int getch();
-
-#endif // COMMAND_H
+#endif // COMMAND_LIST_H

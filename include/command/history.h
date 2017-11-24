@@ -15,34 +15,24 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program, if not, see <http://www.gnu.org/licenses/>.
 
-#ifndef COMMAND_H
-#define COMMAND_H
+#ifndef HISTORY_H
+#define HISTORY_H
 
+#define HIST_FILE "scmd.hist"
 #define MAX_LINE_SIZE (1 << 10)
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <unistd.h>
-#include <termios.h>
 
-#include "history.h"
-#include "commandlist.h"
+#include "file/file.h"
+
+static file history;
+
+void initHistory();
+void printHistory();
+void appendCommand(const char* cmd);
 
 
-static uint32_t kids;
-
-void initCommander();
-
-void printPointer();
-
-void waitForKids();
-
-void waitInput();
-
-uint32_t getKids();
-
-int getch();
-
-#endif // COMMAND_H
+#endif // HISTORY_H

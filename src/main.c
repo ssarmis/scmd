@@ -17,15 +17,17 @@
 
 // @CleanUp
 
-#include <string.h>
-
 #include "file/file.h"
 #include "command/command.h"
+#include "command/history.h"
 
 // @TODO add doc
 
 int main(int argc, char** argv){
 
+	/* use system call to make terminal send all keystrokes directly to stdin */
+	// system ("/bin/stty raw");
+	initHistory();
 	initCommander();
 
 	while(1){

@@ -31,8 +31,10 @@ void openf(file* f, const char* path, uint32_t flags){
 }
 
 void createf(file* f, const char* path){
-	openf(f, path, O_TRUNC | O_CREAT | O_WRONLY);
+	openf(f, path, O_TRUNC | O_CREAT | O_RDWR);
 }
+
+// TODO fix the size not working on history file
 
 int readf(file* f){
 	while((f->size = read(f->fileid, f->buf, MAX_FILE_SIZE - 1)) > 0){
