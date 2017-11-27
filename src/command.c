@@ -26,22 +26,34 @@ void printPointer(){
 }
 
 void waitInput(){
-	
-	char tmp = getch();
-	// @FixMe
-	switch(tmp){
-		case '^[[A': // up arrow
-			printf("up");
-			break;
+	char c;
+	//if((c = getch()) == '^'){
+	int canContinue = 1;	
+	while(canContinue){
+		getch();
+		getch();
+		char tmp = getch();
+		// @FixMe
+		switch(tmp){
+			case 'A': // up arrow
+				goHistUp();
+				printHistLine();
+				canContinue = 1;
+				break;
 
-		case '^[[B': // down arrow
-			printf("down");
-			break;
+			case 'B': // down arrow
+				goHistDown();
+				printHistLine();
+				canContinue = 1;
+				break;
 
-		default:
-			fputc(tmp, stdin);
-			break;
+			default:
+				fputc(tmp, stdin);
+				canContinue = 0;
+				break;
+		}
 	}
+	//} // else write(STDOUT_FILENO, c, sizeof(c));
 	
 	char* buf = (char*)malloc(sizeof(char) * MAX_LINE_SIZE);
 
@@ -56,6 +68,7 @@ void waitInput(){
 /// function copied from https://www.daniweb.com
 /// from user jaybhanderi 
 /// equivalent for getch()
+///
 
 int getch(){
     struct termios oldattr, newattr;
@@ -88,11 +101,18 @@ void parseCommand(const char* cmd){
 			/// Things get interpreted here VVV just one command so nothing too complicated
 			/// no args, no nothing.
 			///
-			
+			goHistDown();
 			appendCommand(cmd);
 
 			if (strcmp(cmd, "exit\n") == 0) commandExit();
 			else if (strcmp(cmd, "hist\n") == 0) printHistory();
+			else {
+			
+				if(fork() == 0){
+					execv(cmd, cmd);				
+				}
+								
+			}
 			// else if (strcmp(cmd, "...") != 0) command function
 			// etc
 			

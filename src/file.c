@@ -43,7 +43,7 @@ int readf(file* f){
 	
 	if(f->size < 0){
 		int errsv = errno;
-		printf("Could not read file %s error %d\n", f->path, errsv);
+		printf("Could not read file %s `error %d\n", f->path, errsv);
 	}
 
 	return f->size;

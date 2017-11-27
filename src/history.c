@@ -38,3 +38,46 @@ void printHistory(){
 void appendCommand(const char* cmd){
 	writef(&history, cmd, strlen(cmd));
 }
+
+
+void goHistUp(){
+	histLine--;
+	if(histLine < 0) histLine = 0;
+}
+
+void goHistDown(){
+	histLine++;
+}
+
+void printHistLine(){
+
+	char sep[] = "\n";
+	char* str;
+	int i = 0;
+	
+	closef(&history);
+
+	openf(&history, HIST_FILE, O_RDONLY);
+
+	readf(&history);
+	
+
+	char* tmp = history.buf;
+	
+	while((str = strtok(tmp, sep)) != NULL){
+		if(++i == histLine){			
+			printf("\r$> %d %s", histLine, str);
+			str = strtok(NULL, sep);
+			break;
+		}
+
+	}
+
+	closef(&history);
+	openf(&history, HIST_FILE, O_RDWR | O_APPEND);
+}
+
+
+
+
+

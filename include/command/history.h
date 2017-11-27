@@ -28,11 +28,14 @@
 
 #include "file/file.h"
 
+static int histLine;
 static file history;
 
 void initHistory();
 void printHistory();
 void appendCommand(const char* cmd);
-
+void goHistUp();
+void goHistDown();
+void printHistLine();
 
 #endif // HISTORY_H

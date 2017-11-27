@@ -1,6 +1,7 @@
-CC=gcc
-CFLAGS=-w
+CC = gcc
+CDEBUG = -g
+CFLAGS = -w
 
 all:
 	mkdir -p ./build/
-	$(CC) $(CFLAGS) -o ./build/a ./src/*.c -I./include
+	$(CC) $(CDEBUG) $(CFLAGS) -o ./build/a ./src/*.c -I./include
