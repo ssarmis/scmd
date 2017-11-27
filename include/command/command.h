@@ -31,12 +31,14 @@
 #include "commandlist.h"
 
 
-static int* mainPipe;
+static pid_t pid;
+
+static int mainPipe[2];
 
 static uint32_t kids;
 
-void initPipe(int* pip);
-
+void initPipe();
+void initForkKid();
 void initCommander();
 
 // @OldCode

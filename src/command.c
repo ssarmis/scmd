@@ -17,8 +17,18 @@
 
 #include "command/command.h"
 
+void initPipe(){
+	pipe(mainPipe);
+}
+
+
 void initCommander(){
 	kids = 0;
+}
+
+void initForkKid(){
+	pid = fork();
+	kids++;
 }
 
 /* @OldCode
@@ -71,10 +81,6 @@ void waitInput(){
 }
 
 
-void initPipe(int* pip){
-	mainPipe = pip;
-}
-
 void parseCommand(const char* cmd){
 
 	char* tmp = cmd;
@@ -84,6 +90,8 @@ void parseCommand(const char* cmd){
 		checker++;
 		tmp++;
 	}
+
+	add_history(cmd);
 	
 	if(!checker) { // just one thing in the command line
 		if(strlen(cmd) != 0){
@@ -96,15 +104,9 @@ void parseCommand(const char* cmd){
 			/// goHistDown();
 			/// appendCommand(cmd);
 
-			add_history(cmd);
 
 			if (strcmp(cmd, "exit") == 0) commandExit();
 			else { // not a listed command
-				pid_t kid = fork();				
-				if(kid > 0) kids++;
-				else if(kid == 0){
-					execlp(cmd, NULL);
-				}
 			}
 	
 			// else if (strcmp(cmd, "...") != 0) command function
@@ -115,37 +117,100 @@ void parseCommand(const char* cmd){
 		}
 	} else { // multiple things on the command line
 
-		char* tmp = cmd;
-		char** args;
-		args = (char**)malloc(sizeof(char*) * 12); // 12 should be the maximum words in command line 
-												   // so that I don't use sysconf to see how many are max
-		int num = 0;
+		kids++;
+		initForkKid();
 
-		while((tmp = strtok(tmp, "\n")) != NULL){
-			// store things in the char* array
+		if(pid > 0){
 
-			args[num] = (char*)malloc(sizeof(char) * strlen(tmp));
-			args[num++] = tmp;
-			tmp = strtok(NULL, "\n");
-		}
-		
-		
-		fork();
-		
-		close(mainPipe[0]);
-
-		write(mainPipe[1], num, sizeof(num));
-		int i;
+			char* tmp = cmd;
+			char** args;
+			args = (char**)malloc(sizeof(char*) * 12); // 12 should be the maximum words in command line 
+										        // so that I don't use sysconf to see how many are max
+			int num = 0;
 	
-		for(i = 0; i < num; i++){
-			int size = strlen(args[i]) * sizeof(char);
-			write(mainPipe[1], &size, sizeof(size));
-			write(mainPipe[1], args[i], size);
+			while((tmp = strtok(tmp, "\n")) != NULL){
+				// store things in the char* array
+	
+				args[num] = (char*)malloc(sizeof(char) * strlen(tmp));
+				args[num++] = tmp;
+				tmp = strtok(NULL, "\n");
+			}
+			
+			
+			
+			close(mainPipe[0]);
+	
+			write(mainPipe[1], &num, sizeof(num));
+			int i;
+		
+			for(i = 0; i < num; i++){
+				int size = strlen(args[i]) * sizeof(char);
+				write(mainPipe[1], &size, sizeof(size));
+				write(mainPipe[1], args[i], size);
+			}
+	
+			close(mainPipe[1]);
+	
+			free(args);
+
+
+		} else if(pid == 0){
+			close(mainPipe[1]);
+
+			int num;
+			read(mainPipe[0], &num, sizeof(num));
+			char** args = (char**)malloc(num * sizeof(char*) + 1);
+			printf("%d \n", num);
+	
+			int i;
+			for(i = 0; i < num; i++){
+				if(i == 0){
+					int size;
+					read(mainPipe[0], &size, sizeof(size));
+
+					args[i] = (char*)malloc(size + 6);
+					char* tmpc = (char*)malloc(size + 1);
+					
+					read(mainPipe[0], tmpc, size);
+					tmpc[size] = 0;
+
+					char* str1 = (char*)malloc(size + 6);
+
+					str1[0] = '/';
+					str1[1] = 'b';
+					str1[2] = 'i';
+					str1[3] = 'n';
+					str1[4] = '/';
+					
+					strcat(str1, tmpc);
+					
+					args[i] = str1;	
+					args[i][size + 5] = 0;
+				} else {
+					int size;
+					read(mainPipe[0], &size, sizeof(size));
+
+					args[i] = (char*)malloc(size);
+					read(mainPipe[0], args[i], size);
+					args[i][size] = 0;
+				}
+				printf("%s \n", args[i]);
+			}
+			args[num] = NULL;
+
+			kids--;
+
+			close(mainPipe[0]);
+			
+			execl(args[0], args);
+			
+			printf("Could not execute ! \n%s %s %s", args[0], args[1], args[2]);
+
+			free(args);
+
+			exit(127); //@CleanUp
 		}
 
-		close(mainPipe[1]);
-
-		free(args);
 	}
 }
 

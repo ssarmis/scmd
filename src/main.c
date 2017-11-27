@@ -25,47 +25,15 @@
 
 int main(int argc, char** argv){
 
-	int mainPipe[2];
+	initPipe();
 
-	pipe(mainPipe);
+	rl_bind_key('\t',rl_abort);
+	initCommander();
 
-	initPipe(mainPipe);
-
-	pid_t myId = getpid();
-
-	if(myId != 0){
-		rl_bind_key('\t',rl_abort);
-		initCommander();
-
-		while(1){
-			waitInput();
-			waitForKids();
-		}
-	} else {
-		close(mainPipe[1]);
-
-		int num;
-		read(mainPipe[0], &num, sizeof(num));
-		char** args = (char**)malloc(num * sizeof(char*));
-		printf("%d \n", num);
-		
-		int i;
-		for(i = 0; i < num; i++){
-			int size;
-			read(mainPipe[0], &size, sizeof(size));
-
-			args[i] = (char*)malloc(size);
-			read(mainPipe[0], args[i], size);
-
-			printf("%s \n", args[i]);
-		}
-		
-		close(mainPipe[0]);
-
-		free(args);
-
-		exit(0);//@CleanUp
+	while(1){
+		waitInput();
 	}
-	
+
 	return 0;
 }
+
