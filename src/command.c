@@ -136,7 +136,7 @@ void parseCommand(const char* cmd){
 				tmp = strtok(NULL, "\n");
 			}
 			
-			
+			num++;
 			
 			close(mainPipe[0]);
 	
@@ -159,8 +159,8 @@ void parseCommand(const char* cmd){
 
 			int num;
 			read(mainPipe[0], &num, sizeof(num));
-			char** args = (char**)malloc(num * sizeof(char*) + 1);
-			printf("%d \n", num);
+
+			char** args = (char**)malloc((num + 1) * sizeof(char*));
 	
 			int i;
 			for(i = 0; i < num; i++){
@@ -194,8 +194,8 @@ void parseCommand(const char* cmd){
 					read(mainPipe[0], args[i], size);
 					args[i][size] = 0;
 				}
-				printf("%s \n", args[i]);
 			}
+
 			args[num] = NULL;
 
 			kids--;
@@ -204,7 +204,7 @@ void parseCommand(const char* cmd){
 			
 			execl(args[0], args);
 			
-			printf("Could not execute ! \n%s %s %s", args[0], args[1], args[2]);
+			printf("Could not execute ! \n%s %s %s\n$> ", args[0], args[1], args[2]);
 
 			free(args);
 
