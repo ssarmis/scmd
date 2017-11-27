@@ -14,7 +14,7 @@
 //
 //	You should have received a copy of the GNU General Public License
 //	along with this program, if not, see <http://www.gnu.org/licenses/>.
-
+/*  @OldCode
 #include "command/history.h"
 
 void initHistory(){
@@ -77,7 +77,7 @@ void printHistLine(){
 	openf(&history, HIST_FILE, O_RDWR | O_APPEND);
 }
 
-
+*/
 
 
 

@@ -21,13 +21,16 @@ void initCommander(){
 	kids = 0;
 }
 
+/* @OldCode
 void printPointer(){
 	printf("$> ");
 }
+*/
 
 void waitInput(){
+
+	/* @OldCode	
 	char c;
-	//if((c = getch()) == '^'){
 	int canContinue = 1;	
 	while(canContinue){
 		getch();
@@ -54,35 +57,23 @@ void waitInput(){
 		}
 	}
 	//} // else write(STDOUT_FILENO, c, sizeof(c));
-	
-	char* buf = (char*)malloc(sizeof(char) * MAX_LINE_SIZE);
+	*/
 
-	fgets(buf, MAX_LINE_SIZE, stdin);
+	
+	char* buf = readline("$> ");
+	
+	// @OldCode
+	// fgets(buf, MAX_LINE_SIZE, stdin);
 	
 	parseCommand(buf);
 
 	free(buf);
 }
 
-///
-/// function copied from https://www.daniweb.com
-/// from user jaybhanderi 
-/// equivalent for getch()
-///
 
-int getch(){
-    struct termios oldattr, newattr;
-    int ch;
-    tcgetattr( STDIN_FILENO, &oldattr );
-    newattr = oldattr;
-    newattr.c_lflag &= ~( ICANON | ECHO );
-    tcsetattr( STDIN_FILENO, TCSANOW, &newattr );
-    ch = getchar();
-    tcsetattr( STDIN_FILENO, TCSANOW, &oldattr );
-    return ch;
+void initPipe(int* pip){
+	mainPipe = pip;
 }
-
-///
 
 void parseCommand(const char* cmd){
 
@@ -101,32 +92,61 @@ void parseCommand(const char* cmd){
 			/// Things get interpreted here VVV just one command so nothing too complicated
 			/// no args, no nothing.
 			///
-			goHistDown();
-			appendCommand(cmd);
+			/// @OldCode
+			/// goHistDown();
+			/// appendCommand(cmd);
 
-			if (strcmp(cmd, "exit\n") == 0) commandExit();
-			else if (strcmp(cmd, "hist\n") == 0) printHistory();
-			else {
-			
-				if(fork() == 0){
-					execv(cmd, cmd);				
+			add_history(cmd);
+
+			if (strcmp(cmd, "exit") == 0) commandExit();
+			else { // not a listed command
+				pid_t kid = fork();				
+				if(kid > 0) kids++;
+				else if(kid == 0){
+					execlp(cmd, NULL);
 				}
-								
 			}
+	
 			// else if (strcmp(cmd, "...") != 0) command function
 			// etc
 			
 		} else {
-			printf("Could not read parse an empty command");
+			printf("Could not read parse an empty command\n");
 		}
 	} else { // multiple things on the command line
+
+		char* tmp = cmd;
+		char** args;
+		args = (char**)malloc(sizeof(char*) * 12); // 12 should be the maximum words in command line 
+												   // so that I don't use sysconf to see how many are max
+		int num = 0;
+
+		while((tmp = strtok(tmp, "\n")) != NULL){
+			// store things in the char* array
+
+			args[num] = (char*)malloc(sizeof(char) * strlen(tmp));
+			args[num++] = tmp;
+			tmp = strtok(NULL, "\n");
+		}
 		
+		
+		fork();
+		
+		close(mainPipe[0]);
+
+		write(mainPipe[1], num, sizeof(num));
+		int i;
+	
+		for(i = 0; i < num; i++){
+			int size = strlen(args[i]) * sizeof(char);
+			write(mainPipe[1], &size, sizeof(size));
+			write(mainPipe[1], args[i], size);
+		}
+
+		close(mainPipe[1]);
+
+		free(args);
 	}
-
-	// @CleanUp
-	// @TODO if has at least one space we have a command, yey, implement this
-	//printf("%d\n", checker);
-
 }
 
 void waitForKids(){
@@ -139,4 +159,25 @@ void waitForKids(){
 uint32_t getKids(){
 	return kids;
 }
+
+
+///
+/// function copied from https://www.daniweb.com
+/// from user jaybhanderi 
+/// equivalent for getch()
+/// @OldCode
+/*
+int getch(){
+    struct termios oldattr, newattr;
+    int ch;
+    tcgetattr( STDIN_FILENO, &oldattr );
+    newattr = oldattr;
+    newattr.c_lflag &= ~( ICANON | ECHO );
+    tcsetattr( STDIN_FILENO, TCSANOW, &newattr );
+    ch = getchar();
+    tcsetattr( STDIN_FILENO, TCSANOW, &oldattr );
+    return ch;
+}
+*/
+///
 

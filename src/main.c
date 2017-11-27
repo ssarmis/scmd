@@ -17,24 +17,55 @@
 
 // @CleanUp
 
-#include "file/file.h"
+#include <readline/readline.h>
+
 #include "command/command.h"
-#include "command/history.h"
 
 // @TODO add doc
 
 int main(int argc, char** argv){
 
-	/* use system call to make terminal send all keystrokes directly to stdin */
-	// system ("/bin/stty raw");
-	initHistory();
-	initCommander();
+	int mainPipe[2];
 
-	while(1){
-		printPointer();
-		waitInput();
-		waitForKids();
+	pipe(mainPipe);
+
+	initPipe(mainPipe);
+
+	pid_t myId = getpid();
+
+	if(myId != 0){
+		rl_bind_key('\t',rl_abort);
+		initCommander();
+
+		while(1){
+			waitInput();
+			waitForKids();
+		}
+	} else {
+		close(mainPipe[1]);
+
+		int num;
+		read(mainPipe[0], &num, sizeof(num));
+		char** args = (char**)malloc(num * sizeof(char*));
+		printf("%d \n", num);
+		
+		int i;
+		for(i = 0; i < num; i++){
+			int size;
+			read(mainPipe[0], &size, sizeof(size));
+
+			args[i] = (char*)malloc(size);
+			read(mainPipe[0], args[i], size);
+
+			printf("%s \n", args[i]);
+		}
+		
+		close(mainPipe[0]);
+
+		free(args);
+
+		exit(0);//@CleanUp
 	}
-
+	
 	return 0;
 }

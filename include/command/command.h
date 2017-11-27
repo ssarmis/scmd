@@ -20,22 +20,27 @@
 
 #define MAX_LINE_SIZE (1 << 10)
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
-#include <termios.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
-#include "history.h"
 #include "commandlist.h"
 
 
+static int* mainPipe;
+
 static uint32_t kids;
+
+void initPipe(int* pip);
 
 void initCommander();
 
-void printPointer();
+// @OldCode
+// void printPointer();
 
 void waitForKids();
 
@@ -43,6 +48,7 @@ void waitInput();
 
 uint32_t getKids();
 
-int getch();
+// @OldCode 
+// int getch();
 
 #endif // COMMAND_H
