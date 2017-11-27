@@ -121,46 +121,46 @@ void parseCommand(const char* cmd){
 		initForkKid();
 
 		if(pid > 0){
-
 			char* tmp = cmd;
-			char** args;
-			args = (char**)malloc(sizeof(char*) * 12); // 12 should be the maximum words in command line 
-										        // so that I don't use sysconf to see how many are max
+			char* args[12];
+
 			int num = 0;
-	
-			while((tmp = strtok(tmp, "\n")) != NULL){
+			tmp = strtok(tmp, " ");
+		
+			while(tmp != NULL){
 				// store things in the char* array
-	
-				args[num] = (char*)malloc(sizeof(char) * strlen(tmp));
-				args[num++] = tmp;
-				tmp = strtok(NULL, "\n");
+
+				args[num] = tmp;
+				num++;
+			
+				tmp = strtok(NULL, " ");
 			}
-			
 			num++;
-			
 			close(mainPipe[0]);
 	
 			write(mainPipe[1], &num, sizeof(num));
 			int i;
 		
-			for(i = 0; i < num; i++){
-				int size = strlen(args[i]) * sizeof(char);
+			for(i = 0; i < num - 1; i++){
+				int size = strlen(args[i]);
+
 				write(mainPipe[1], &size, sizeof(size));
 				write(mainPipe[1], args[i], size);
 			}
 	
 			close(mainPipe[1]);
 	
-			free(args);
+			// free(args);
 
 
 		} else if(pid == 0){
+
 			close(mainPipe[1]);
 
 			int num;
 			read(mainPipe[0], &num, sizeof(num));
 
-			char** args = (char**)malloc((num + 1) * sizeof(char*));
+			char** args = (char**)malloc((num) * sizeof(char*));
 	
 			int i;
 			for(i = 0; i < num; i++){
@@ -168,13 +168,16 @@ void parseCommand(const char* cmd){
 					int size;
 					read(mainPipe[0], &size, sizeof(size));
 
-					args[i] = (char*)malloc(size + 6);
+					args[i] = (char*)malloc(size + 5 + 1);
+					memset(args[i], 0, size + 5 + 1);					
+					
 					char* tmpc = (char*)malloc(size + 1);
+					memset(tmpc, 0, size + 1);					
 					
 					read(mainPipe[0], tmpc, size);
-					tmpc[size] = 0;
 
-					char* str1 = (char*)malloc(size + 6);
+					char* str1 = (char*)malloc(size + 5 + 1);
+					memset(str1, 0, size + 5 + 1);					
 
 					str1[0] = '/';
 					str1[1] = 'b';
@@ -184,29 +187,27 @@ void parseCommand(const char* cmd){
 					
 					strcat(str1, tmpc);
 					
-					args[i] = str1;	
-					args[i][size + 5] = 0;
+					args[i] = str1;
 				} else {
 					int size;
 					read(mainPipe[0], &size, sizeof(size));
 
-					args[i] = (char*)malloc(size);
+					args[i] = (char*)malloc(size + 1);
+					memset(args[i], 0, size + 1);					
+
 					read(mainPipe[0], args[i], size);
-					args[i][size] = 0;
 				}
 			}
 
-			args[num] = NULL;
-
-			kids--;
+			args[num - 1] = NULL;
 
 			close(mainPipe[0]);
-			
-			execl(args[0], args);
-			
-			printf("Could not execute ! \n%s %s %s\n$> ", args[0], args[1], args[2]);
 
-			free(args);
+			execl(args[0], args, NULL);
+			
+			printf("Could not execute ! \n%s %s\n$> ", args[0], args[1]);
+
+			// free(args);
 
 			exit(127); //@CleanUp
 		}
