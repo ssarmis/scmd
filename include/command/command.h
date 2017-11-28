@@ -41,16 +41,11 @@ void initPipe();
 void initForkKid();
 void initCommander();
 
-// @OldCode
-// void printPointer();
 
 void waitForKids();
 
 void waitInput();
 
 uint32_t getKids();
-
-// @OldCode 
-// int getch();
 
 #endif // COMMAND_H
