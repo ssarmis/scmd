@@ -80,7 +80,6 @@ void execLinux(const char* cmd){
 		}
 		num++;
 
-		close(mainPipe[0]);
 
 		write(mainPipe[1], &num, sizeof(num));
 		int i;
@@ -92,15 +91,13 @@ void execLinux(const char* cmd){
 			write(mainPipe[1], args[i], size);
 		}
 
-		close(mainPipe[1]);
 		waitForKids();
 
-		// free(args);
+		// free(args); @FixMe seg foult
 
 
 	} else if(pid == 0){
 
-		close(mainPipe[1]);
 
 		int num;
 		read(mainPipe[0], &num, sizeof(num));
@@ -146,11 +143,9 @@ void execLinux(const char* cmd){
 
 		args[num - 1] = NULL;
 
-		close(mainPipe[0]);
-
 		execvp(args[0], args);
 
-		printf("Could not execute !");
+		printf("Could not execute !\n");
 
 		exit(1);
 	}
