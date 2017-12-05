@@ -41,7 +41,7 @@ void initPipe();
 void initForkKid();
 void initCommander();
 
-void execParams(const char* args[128], int spaces);
+void execParams(const char** args, int spaces);
 
 void waitForKids();
 

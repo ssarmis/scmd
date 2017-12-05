@@ -82,20 +82,21 @@ void parseCommand(const char* cmd){
 		}
 
 	} else {
-		printf("Could not read parse an empty command\n");
+		// printf("Could not read parse an empty command\n");
 	}
 
 }
 
-void execParams(const char* args[128], int spaces){
+void execParams(const char** args, int spaces){
 	
 	char** cargs = args; // @FixMe
+	int words = spaces;
 
-	if(strcmp(cargs[0], "nl")) commandNl(cargs);
+	if(strcmp(cargs[0], "nl") == 0) commandNl(cargs);
 	else {
 		int totalSize = 0;
 
-		for(int i = 0; i < spaces + 1; i++){
+		for(int i = 0; i < words; i++){
 			totalSize += strlen(cargs[i]);
 		}
 
@@ -103,11 +104,14 @@ void execParams(const char* args[128], int spaces){
 		char* cmd = (char*)malloc(totalSize * sizeof(char));
 		memset(cmd, 0, (totalSize - 1) * sizeof(char));
 
-		for(int i = 0; i < spaces + 1; i++){
+		int i;
+		
+		for(i = 0; i < words; i++){
 			strcat(cmd, cargs[i]);
-			printf("%s\n", cmd);
+			strcat(cmd, " ");
 		}
 
+		printf("%s \n", cmd);
 		execLinux(cmd);
 	}
 
