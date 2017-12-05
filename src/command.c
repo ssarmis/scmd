@@ -43,19 +43,72 @@ void waitInput(){
 
 void parseCommand(const char* cmd){
 
-	char* tmp = cmd;
 	int checker = 0;
 	add_history(cmd);
 	
 	if(strlen(cmd) != 0){
 
+		char* redirArgs[2];
+		
+		char* tredir = cmd;
+		char* tspaces = cmd;
+
+		int redirects = 0;
+		int spaces = 0;
+
+		tredir = strtok(tredir, ">");
+
+		while(tredir != NULL){
+			redirArgs[redirects++] = tredir;
+			tredir = strtok(NULL, ">");
+		}
+
+		char* args[128];
+
+		tspaces = strtok(tspaces, " ");
+
+		while(tspaces != NULL){
+			args[spaces++] = tspaces;
+			tspaces = strtok(NULL, " ");
+		}
+		
+		
 		if (strcmp(cmd, "exit") == 0) commandExit();
-		else { 
-			execLinux(cmd);
+		else if(spaces == 1 && redirects == 1) execLinux(cmd);
+		else if(redirects > 1){
+			printf("this guy wants a redirect to %s\n", redirArgs[1]);
+		} else if(spaces > 1 && redirects == 1){
+			execParams(args, spaces);
 		}
 
 	} else {
 		printf("Could not read parse an empty command\n");
+	}
+
+}
+
+void execParams(const char* args[128], int spaces){
+	
+	char** cargs = args; // @FixMe
+
+	if(strcmp(cargs[0], "nl")) commandNl(cargs);
+	else {
+		int totalSize = 0;
+
+		for(int i = 0; i < spaces + 1; i++){
+			totalSize += strlen(cargs[i]);
+		}
+
+
+		char* cmd = (char*)malloc(totalSize * sizeof(char));
+		memset(cmd, 0, (totalSize - 1) * sizeof(char));
+
+		for(int i = 0; i < spaces + 1; i++){
+			strcat(cmd, cargs[i]);
+			printf("%s\n", cmd);
+		}
+
+		execLinux(cmd);
 	}
 
 }
@@ -93,7 +146,7 @@ void execLinux(const char* cmd){
 
 		waitForKids();
 
-		// free(args); @FixMe seg foult
+		// free(args); @FixMe seg fault
 
 
 	} else if(pid == 0){

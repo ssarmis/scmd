@@ -21,3 +21,6 @@ void commandExit(){
 	exit(0);
 }
 
+void commandNl(const char* args[128]){
+	printf("%s\n", args[1]);
+}
