@@ -48,13 +48,16 @@ void parseCommand(const char* cmd){
 	
 	if(strlen(cmd) != 0){
 
-		char* redirArgs[2];
 		
 		char* tredir = cmd;
 		char* tspaces = cmd;
+		char* tjoins = cmd;
 
 		int redirects = 0;
 		int spaces = 0;
+		int joins = 0; 
+
+		char* redirArgs[2]; // @TODO make this more flexible
 
 		tredir = strtok(tredir, ">");
 
@@ -63,7 +66,7 @@ void parseCommand(const char* cmd){
 			tredir = strtok(NULL, ">");
 		}
 
-		char* args[128];
+		char* args[128]; // @TODO make this more flexible
 
 		tspaces = strtok(tspaces, " ");
 
@@ -71,12 +74,25 @@ void parseCommand(const char* cmd){
 			args[spaces++] = tspaces;
 			tspaces = strtok(NULL, " ");
 		}
+
+		char* joinArgs[12]; // @TODO make this more flexible
+
+		tjoins = strtok(tjoins, "|");
+
+		while(tjoins != NULL){
+			redirArgs[joins++] = tjoins;
+			tjoins = strtok(NULL, "|");
+		}
 		
 		
 		if (strcmp(cmd, "exit") == 0) commandExit();
 		else if(spaces == 1 && redirects == 1) execLinux(cmd);
 		else if(redirects > 1){
 			printf("this guy wants a redirect to %s\n", redirArgs[1]);
+			if(joins > 1){
+				// execParams(args);			
+			}
+			// @TODO add execParam here and redirect that to a file		
 		} else if(spaces > 1 && redirects == 1){
 			execParams(args, spaces);
 		}
@@ -84,6 +100,12 @@ void parseCommand(const char* cmd){
 	} else {
 		// printf("Could not read parse an empty command\n");
 	}
+
+}
+
+void execRedir(const char** lh, const char* redirect){
+	
+	
 
 }
 

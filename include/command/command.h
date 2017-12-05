@@ -41,6 +41,7 @@ void initPipe();
 void initForkKid();
 void initCommander();
 
+void execRedir(const char** lh, const char* redirect);
 void execParams(const char** args, int spaces);
 
 void waitForKids();
