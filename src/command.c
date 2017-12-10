@@ -85,30 +85,14 @@ void parseCommand(const char* cmd){
 			tjoins = strtok(NULL, "|");
 		}
 
+		printf("%d, ", joins);
 		
-		
+
 		if (strcmp(cmd, "exit") == 0) commandExit();
-		else if(joins > 0){
-			int cmdindex;
+		else if(joins > 1){
 			
-			for(cmdindex = 0; cmdindex < joins; cmdindex++){
-				printf("%s, ", joinArgs[0]);
-				char* args2[128]; // @TODO make this more flexible
-				int spaces2 = 0;
-				char* tspaces2 = joinArgs[cmdindex];
-
-				tspaces2 = strtok(tspaces2, " ");
-
-				while(tspaces != NULL){
-					args2[spaces2++] = tspaces2;
-					tspaces2 = strtok(NULL, " ");
-				}
-
-				execParams(args, spaces2, 1);
-			}
-
-			dup2(mainPipe[1], stdout);
-			
+			execInChain(joinArgs, joins);
+			//execParams(tempArgs, tempArg, 1);
 
 		} else if(redirects > 1){
 			printf("this guy wants a redirect to %s\n", redirArgs[1]);
@@ -124,15 +108,24 @@ void parseCommand(const char* cmd){
 }
 
 
-void execRedir(const char** lh, const char* redirect){
+void execRedir(const char** lh, const char* redirect){}
+
+void execInChain(const char** args, int joins){
 	
 	
+	char** cargs = args;
+	int cmdIndex;
+
+	for(cmdIndex = 0; cmdIndex < joins; cmdIndex++){
+		printf("%s, ", cargs[cmdIndex]);
+	}
+
 
 }
 
 void execParams(const char** args, int spaces, int inPipe){
 	
-	char** cargs = args; // @FixMe
+	char** cargs = args;
 	int words = spaces;
 
 	if(strcmp(cargs[0], "nl") == 0) commandNl(cargs);
@@ -154,7 +147,7 @@ void execParams(const char** args, int spaces, int inPipe){
 			strcat(cmd, " ");
 		}
 
-		printf("%s \n", cmd);
+		printf("Command was not found, using linux shell instead.\n");
 		execLinux(cmd, inPipe);
 	}
 
