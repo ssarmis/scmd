@@ -42,7 +42,8 @@ void initForkKid();
 void initCommander();
 
 void execRedir(const char** lh, const char* redirect);
-void execParams(const char** args, int spaces);
+void execParams(const char** args, int spaces, int inPipe);
+void execLinux(const char* cmd, int inPipe);
 
 void waitForKids();
 

@@ -75,26 +75,46 @@ void parseCommand(const char* cmd){
 			tspaces = strtok(NULL, " ");
 		}
 
+
 		char* joinArgs[12]; // @TODO make this more flexible
 
 		tjoins = strtok(tjoins, "|");
 
 		while(tjoins != NULL){
-			redirArgs[joins++] = tjoins;
+			joinArgs[joins++] = tjoins;
 			tjoins = strtok(NULL, "|");
 		}
+
 		
 		
 		if (strcmp(cmd, "exit") == 0) commandExit();
-		else if(spaces == 1 && redirects == 1) execLinux(cmd);
-		else if(redirects > 1){
-			printf("this guy wants a redirect to %s\n", redirArgs[1]);
-			if(joins > 1){
-				// execParams(args);			
+		else if(joins > 0){
+			int cmdindex;
+			
+			for(cmdindex = 0; cmdindex < joins; cmdindex++){
+				printf("%s, ", joinArgs[0]);
+				char* args2[128]; // @TODO make this more flexible
+				int spaces2 = 0;
+				char* tspaces2 = joinArgs[cmdindex];
+
+				tspaces2 = strtok(tspaces2, " ");
+
+				while(tspaces != NULL){
+					args2[spaces2++] = tspaces2;
+					tspaces2 = strtok(NULL, " ");
+				}
+
+				execParams(args, spaces2, 1);
 			}
-			// @TODO add execParam here and redirect that to a file		
-		} else if(spaces > 1 && redirects == 1){
-			execParams(args, spaces);
+
+			dup2(mainPipe[1], stdout);
+			
+
+		} else if(redirects > 1){
+			printf("this guy wants a redirect to %s\n", redirArgs[1]);
+		} else if(spaces == 1 && redirects == 1) execLinux(cmd, 0);
+		else if(spaces > 1 && redirects == 1){
+			execParams(args, spaces, 0);
 		}
 
 	} else {
@@ -103,13 +123,14 @@ void parseCommand(const char* cmd){
 
 }
 
+
 void execRedir(const char** lh, const char* redirect){
 	
 	
 
 }
 
-void execParams(const char** args, int spaces){
+void execParams(const char** args, int spaces, int inPipe){
 	
 	char** cargs = args; // @FixMe
 	int words = spaces;
@@ -134,12 +155,12 @@ void execParams(const char** args, int spaces){
 		}
 
 		printf("%s \n", cmd);
-		execLinux(cmd);
+		execLinux(cmd, inPipe);
 	}
 
 }
 
-void execLinux(const char* cmd){
+void execLinux(const char* cmd, int inPipe){
 
 	kids++;
 	initForkKid();
@@ -176,7 +197,7 @@ void execLinux(const char* cmd){
 
 
 	} else if(pid == 0){
-
+		
 
 		int num;
 		read(mainPipe[0], &num, sizeof(num));
@@ -221,6 +242,9 @@ void execLinux(const char* cmd){
 		}
 
 		args[num - 1] = NULL;
+
+		if(inPipe) dup2(mainPipe[1], stdout);
+		if(inPipe) dup2(mainPipe[0], stdin);
 
 		execvp(args[0], args);
 
