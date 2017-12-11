@@ -85,12 +85,10 @@ void parseCommand(const char* cmd){
 			tjoins = strtok(NULL, "|");
 		}
 
-		printf("%d, ", joins);
-		
-
 		if (strcmp(cmd, "exit") == 0) commandExit();
 		else if(joins > 1){
 			
+			printf("%d, %s, %s\n", joins, joinArgs[0], joinArgs[1]);
 			execInChain(joinArgs, joins);
 			//execParams(tempArgs, tempArg, 1);
 
@@ -117,7 +115,21 @@ void execInChain(const char** args, int joins){
 	int cmdIndex;
 
 	for(cmdIndex = 0; cmdIndex < joins; cmdIndex++){
-		printf("%s, ", cargs[cmdIndex]);
+
+		char* args[128]; // @TODO make this more flexible
+
+		char* tspaces = cargs[cmdIndex];
+		int spaces = 0;	
+	
+		tspaces = strtok(tspaces, " ");
+
+		while(tspaces != NULL){
+			args[spaces++] = tspaces;
+			tspaces = strtok(NULL, " ");
+		}
+
+		execParams(args, spaces, 1);
+
 	}
 
 
@@ -191,6 +203,7 @@ void execLinux(const char* cmd, int inPipe){
 
 	} else if(pid == 0){
 		
+		if(inPipe) dup2(mainPipe[0], stdin);
 
 		int num;
 		read(mainPipe[0], &num, sizeof(num));
@@ -237,7 +250,6 @@ void execLinux(const char* cmd, int inPipe){
 		args[num - 1] = NULL;
 
 		if(inPipe) dup2(mainPipe[1], stdout);
-		if(inPipe) dup2(mainPipe[0], stdin);
 
 		execvp(args[0], args);
 
