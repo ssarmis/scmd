@@ -98,7 +98,6 @@ void parseCommand(const char* cmd){
 		if (strcmp(cmd, "exit") == 0) commandExit();
 		else if(joins > 1){
 			
-			printf("%d, %s, %s, %d\n", joins, joinArgs[0], joinArgs[1], strlen(joinArgs[1]));
 			execInChain(joinArgs, joins);
 		
 		} else if(redirects > 1){
@@ -123,6 +122,13 @@ void execInChain(const char** args, int joins){
 	char** cargs = args;
 	int cmdIndex;
 
+	int pipe0[2];
+	//int pipe1[2];
+
+	int lastRead = -1;
+
+	pid_t pid;
+
 	for(cmdIndex = 0; cmdIndex < joins; cmdIndex++){
 
 		char* args[128]; // @TODO make this more flexible
@@ -137,10 +143,39 @@ void execInChain(const char** args, int joins){
 			tspaces = strtok(NULL, " ");
 		}
 
-		execParams(args, spaces, 1);
+		args[spaces] = NULL;
+
+		pipe(pipe0);	
+
+		pid = fork();
+	
+		if(pid == 0){
+
+						
+			if(cmdIndex == 0){
+				dup2(pipe0[1], stdout);			
+			} else if(cmdIndex == joins - 1){
+				dup2(lastRead, stdin);
+			} else {
+				dup2(lastRead, stdin);
+				dup2(pipe0[1], stdout);
+			}
+			lastRead = pipe0[0];
+			execvp(args[0], args);
+			printf("Could not execute in chain!\n");
+
+		}
+		
+		wait();
+
+		if(lastRead != -1) close(lastRead);
+		close(pipe0[0]);
+		close(pipe0[1]);
 
 	}
 
+	/*
+	*/	
 
 }
 
@@ -212,8 +247,6 @@ void execLinux(const char* cmd, int inPipe){
 
 	} else if(pid == 0){
 		
-		if(inPipe) dup2(mainPipe[0], stdin);
-
 		int num;
 		read(mainPipe[0], &num, sizeof(num));
 
@@ -257,8 +290,6 @@ void execLinux(const char* cmd, int inPipe){
 		}
 
 		args[num - 1] = NULL;
-
-		if(inPipe) dup2(mainPipe[1], stdout);
 
 		execvp(args[0], args);
 
