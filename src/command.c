@@ -121,21 +121,71 @@ void execInChain(const char** args, int joins){
 	
 	char** cargs = args;
 	int cmdIndex;
-
-	int pipe0[2];
-	//int pipe1[2];
-
+	
 	int lastRead = -1;
 
-	pid_t pid;
+	
+	if(fork() == 0){
 
-	for(cmdIndex = 0; cmdIndex < joins; cmdIndex++){
+		int fileDesc[2];
+
+		pid_t pid;
+
+		int in = 0;
+		int out = 1;
+
+		for(cmdIndex = 0; cmdIndex < joins - 1; cmdIndex++){
+			
+			char* args[128]; // @TODO make this more flexible
+
+			char* tspaces = cargs[cmdIndex];
+			int spaces = 0;	
+	
+			tspaces = strtok(tspaces, " ");
+
+			while(tspaces != NULL){
+				args[spaces++] = tspaces;
+				tspaces = strtok(NULL, " ");
+			}
+
+			args[spaces] = NULL;
+
+			pipe(fileDesc);
+
+			pid = fork();
+	 			
+		   	if(pid == 0) {
+
+				out = fileDesc[1];
+				
+				if(in != 0){
+					dup2(in, 0);
+					close(in);
+				}
+			
+				if(out != 1){
+					dup2(out, 1);
+					close(out);
+				}
+
+
+				execvp(args[0], args);
+				exit(0);
+			}
+
+			close(fileDesc[1]);
+
+			in = fileDesc[0];
+
+			wait();
+
+		}
 
 		char* args[128]; // @TODO make this more flexible
 
-		char* tspaces = cargs[cmdIndex];
+		char* tspaces = cargs[joins - 1];
 		int spaces = 0;	
-	
+
 		tspaces = strtok(tspaces, " ");
 
 		while(tspaces != NULL){
@@ -145,37 +195,13 @@ void execInChain(const char** args, int joins){
 
 		args[spaces] = NULL;
 
-		pipe(pipe0);	
 
-		pid = fork();
-	
-		if(pid == 0){
+		dup2(in, 0);	
 
-						
-			if(cmdIndex == 0){
-				dup2(pipe0[1], stdout);			
-			} else if(cmdIndex == joins - 1){
-				dup2(lastRead, stdin);
-			} else {
-				dup2(lastRead, stdin);
-				dup2(pipe0[1], stdout);
-			}
-			lastRead = pipe0[0];
-			execvp(args[0], args);
-			printf("Could not execute in chain!\n");
-
-		}
-		
-		wait();
-
-		if(lastRead != -1) close(lastRead);
-		close(pipe0[0]);
-		close(pipe0[1]);
-
+		execvp(args[0], args);
 	}
-
-	/*
-	*/	
+	wait();
+	printf("\n");
 
 }
 
@@ -254,13 +280,14 @@ void execLinux(const char* cmd, int inPipe){
 
 		int i;
 		for(i = 0; i < num - 1; i++){
+			/* I don't need this anymore, but maybe I want to reuse this.
 			if(i == 0){
 				int size;
 				read(mainPipe[0], &size, sizeof(size));
 
 				args[i] = (char*)malloc(size + 5 + 1);
 				memset(args[i], 0, size + 5 + 1);					
-	
+				
 				char* tmpc = (char*)malloc(size + 1);
 				memset(tmpc, 0, size + 1);					
 	
@@ -279,14 +306,15 @@ void execLinux(const char* cmd, int inPipe){
 	
 				args[i] = str1;
 			} else {
-				int size;
-				read(mainPipe[0], &size, sizeof(size));
+			*/
 
-				args[i] = (char*)malloc(size + 1);
-				memset(args[i], 0, size + 1);					
+			int size;
+			read(mainPipe[0], &size, sizeof(size));
 
-				read(mainPipe[0], args[i], size);
-			}
+			args[i] = (char*)malloc(size + 1);
+			memset(args[i], 0, size + 1);					
+
+			read(mainPipe[0], args[i], size);
 		}
 
 		args[num - 1] = NULL;
