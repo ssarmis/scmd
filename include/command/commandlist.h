@@ -18,12 +18,14 @@
 #ifndef COMMAND_LIST_H
 #define COMMAND_LIST_H
 
-#define MAX_LINE_SIZE (1 << 10)
+#define MAX_FILE_SIZE ((1 << 10) * 10000)
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #include "commandlist.h"
 #include "history.h"
@@ -31,6 +33,8 @@
 
 
 void commandExit();
+void commandNl(const char* args[128]);
+void commandMv(const char* args[128]);
 
 
 #endif // COMMAND_LIST_H

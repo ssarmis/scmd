@@ -29,6 +29,7 @@
 #include <readline/history.h>
 
 #include "commandlist.h"
+#include "file/file.h"
 
 
 static pid_t pid;
@@ -42,8 +43,8 @@ void initForkKid();
 void initCommander();
 
 void execRedir(const char** lh, const char* redirect);
-void execParams(const char** args, int spaces, int inPipe);
-void execLinux(const char* cmd, int inPipe);
+void execParams(const char** args, int spaces, const char* path);
+void execLinux(const char* cmd,  const char* path);
 
 void waitForKids();
 

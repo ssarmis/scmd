@@ -50,9 +50,7 @@ void parseCommand(const char* cmd){
 
 		
 		char* tredir = strdup(cmd);
-		char* tspaces = strdup(cmd);
-		char* tjoins = strdup(cmd);
-
+		
 		int redirects = 0;
 		int spaces = 0;
 		int joins = 0; 
@@ -69,6 +67,9 @@ void parseCommand(const char* cmd){
 		}
 
 		/// end of redirects
+		
+		char* tspaces = strdup(redirArgs[0]);
+		char* tjoins = strdup(redirArgs[0]);
 
 		/// Multiple arguments	
 
@@ -89,23 +90,38 @@ void parseCommand(const char* cmd){
 		tjoins = strtok(tjoins, "|");
 
 		while(tjoins != NULL){
-			joinArgs[joins++] = tjoins;
+			joinArgs[joins++] = tjoins;	
 			tjoins = strtok(NULL, "|");
 		}
 		/// end of joins
 
 
-		if (strcmp(cmd, "exit") == 0) commandExit();
-		else if(joins > 1){
+		if (strcmp(cmd, "exit") == 0){
+
+			 commandExit();
+
+		} else if(joins > 1 && redirects == 1){
 			
-			execInChain(joinArgs, joins);
-		
-		} else if(redirects > 1){
-			printf("this guy wants a redirect to %s\n", redirArgs[1]);
-		} else if(spaces == 1 && redirects == 1) execLinux(cmd, 0);
-		else if(spaces > 1 && redirects == 1){
-			execParams(args, spaces, 0);
+			execInChain(joinArgs, joins, "\0");
+
+		} else if(joins > 1 && redirects > 1){
+			
+			execInChain(joinArgs, joins, redirArgs[1]);
+
+		} else if(spaces == 1 && redirects == 1){
+
+			 execLinux(cmd, "\0");
+
+		} else if(spaces > 1 && redirects == 1){
+
+			execParams(args, spaces, "\0");
+
+		} else if(spaces > 1 && redirects > 1){
+
+			execParams(args, spaces, redirArgs[1]);
+
 		}
+
 
 	} else {
 		// printf("Could not read parse an empty command\n");
@@ -114,16 +130,19 @@ void parseCommand(const char* cmd){
 }
 
 
-void execRedir(const char** lh, const char* redirect){}
+// void execRedir(const char** lh, const char* redirect){}
 
-void execInChain(const char** args, int joins){
+void execInChain(const char** args, int joins, const char* path){
 	
 	
+	int redirect;
+
 	char** cargs = args;
 	int cmdIndex;
 	
-	int lastRead = -1;
-
+	if(path[0] != 0){
+		redirect = open(path, O_TRUNC | O_CREAT | O_RDWR);
+	}
 	
 	if(fork() == 0){
 
@@ -195,22 +214,40 @@ void execInChain(const char** args, int joins){
 
 		args[spaces] = NULL;
 
-
-		dup2(in, 0);	
+		if(path[0] != 0){
+			dup2(in, 0);	
+			dup2(redirect, 1);
+		} else {
+			dup2(in, 0);	
+		}
 
 		execvp(args[0], args);
 	}
 	wait();
 	printf("\n");
 
+	if(path[0] != 0){
+		close(redirect);
+	}
+
 }
 
-void execParams(const char** args, int spaces, int inPipe){
+void execParams(const char** args, int spaces, const char* path){
+	
+	int redirect;	
 	
 	char** cargs = args;
 	int words = spaces;
+	int saved;	
+
+	if(path[0] != 0){
+		redirect = open(path, O_TRUNC | O_CREAT | O_RDWR);
+		saved = dup(1);
+		dup2(redirect, 1);
+	}
 
 	if(strcmp(cargs[0], "nl") == 0) commandNl(cargs);
+	if(strcmp(cargs[0], "mv") == 0) commandMv(cargs);
 	else {
 		int totalSize = 0;
 
@@ -229,13 +266,20 @@ void execParams(const char** args, int spaces, int inPipe){
 			strcat(cmd, " ");
 		}
 
-		// printf("Command was not found, using linux shell instead.\n");
-		execLinux(cmd, inPipe);
+		execLinux(cmd, "\0");
+	}
+
+	wait();
+
+	if(path[0] != 0){
+		close(redirect);
+		dup2(saved, 1);
+		close(saved);
 	}
 
 }
 
-void execLinux(const char* cmd, int inPipe){
+void execLinux(const char* cmd, const char* path){
 
 	kids++;
 	initForkKid();

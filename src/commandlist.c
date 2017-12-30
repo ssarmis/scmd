@@ -22,5 +22,32 @@ void commandExit(){
 }
 
 void commandNl(const char* args[128]){
-	printf("%s\n", args[1]);
+
+	int fd = open(args[1], O_RDONLY);
+
+	char* buffer = (char*)malloc(MAX_FILE_SIZE * sizeof(char));
+
+	int rd = 0;
+
+	while(read(fd, buffer, MAX_FILE_SIZE)){
+		buffer[rd] = 0;
+	}
+
+	close(fd);
+
+	buffer = strtok(buffer, "\n");
+	int count = 0;
+	while(buffer != NULL){
+
+		printf("%d %s", count++, buffer);		
+
+		buffer = strtok(NULL, "\n");
+	}
+
+}
+
+void commandMv(const char* args[128]){
+	
+	
+
 }

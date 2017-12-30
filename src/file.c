@@ -15,6 +15,12 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program, if not, see <http://www.gnu.org/licenses/>.
 
+/*
+ *
+ *	Deprecated, lots of bugs.
+ *
+ */
+
 #include "file/file.h"
 
 void openf(file* f, const char* path, uint32_t flags){
