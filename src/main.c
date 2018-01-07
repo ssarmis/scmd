@@ -15,13 +15,19 @@
 //	You should have received a copy of the GNU General Public License
 //	along with this program, if not, see <http://www.gnu.org/licenses/>.
 
-// @CleanUp
 
 #include <readline/readline.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdio.h>
 
 #include "command/command.h"
 
-// @TODO add doc
 
 int main(int argc, char** argv){
 

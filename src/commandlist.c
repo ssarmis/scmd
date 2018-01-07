@@ -21,33 +21,70 @@ void commandExit(){
 	exit(0);
 }
 
-void commandNl(const char* args[128]){
+void commandNl(int argc, const char* args[128]){
 
-	int fd = open(args[1], O_RDONLY);
+	char sep = '\t';
 
-	char* buffer = (char*)malloc(MAX_FILE_SIZE * sizeof(char));
+	if(argc > 1){
+		if(args[1][0] == '-'){
+			if(args[1][1] == 's')
+				sep = args[1][2];	
+		}
 
-	int rd = 0;
+		int fd = open(args[argc - 1], O_RDONLY);
 
-	while(read(fd, buffer, MAX_FILE_SIZE)){
-		buffer[rd] = 0;
-	}
+		char* buffer = (char*)malloc(MAX_FILE_SIZE * sizeof(char));
 
-	close(fd);
+		int rd = 0;
 
-	buffer = strtok(buffer, "\n");
-	int count = 0;
-	while(buffer != NULL){
+		while((rd = read(fd, buffer, MAX_FILE_SIZE)) > 0){
+			buffer[rd] = 0;
+		}
+		close(fd);
 
-		printf("%d %s", count++, buffer);		
-
-		buffer = strtok(NULL, "\n");
+		buffer = strtok(buffer, "\n");
+		int count = 0;
+		while(buffer != NULL){
+	
+			printf("%d%c%s\n", count++, sep, buffer);		
+	
+			buffer = strtok(NULL, "\n");
+		}
+	} else {
+		printf("nl: not enough parameters provided.");	
 	}
 
 }
 
 void commandMv(const char* args[128]){
 	
+	int src;
+	int dest;
+
+	src = open(args[1], O_RDONLY);
+	dest = open(args[2], O_TRUNC | O_CREAT | O_RDWR, S_IWUSR);
 	
+	if(rename(src, dest) == -1){
+		printf("%d\n", errno);
+	}
+
+	unlink(src);
+
+	close(src);
+	close(dest);
 
 }
+
+void commandCd(const char* args[128]){
+	int ch = chdir(args[1]);
+	if(ch != 0) {
+		printf("Something didn't really work here...\n");	
+	}
+}
+
+
+
+
+
+
+

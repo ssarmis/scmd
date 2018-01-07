@@ -33,6 +33,7 @@ void initForkKid(){
 
 void waitInput(){
 
+	printf("%s", get_current_dir_name());
 	char* buf = readline("$> ");
 	
 	parseCommand(buf);
@@ -188,7 +189,10 @@ void execInChain(const char** args, int joins, const char* path){
 				}
 
 
-				execvp(args[0], args);
+//				execvp(args[0], args);
+
+				execParams(args, spaces, "\0");
+
 				exit(0);
 			}
 
@@ -221,7 +225,9 @@ void execInChain(const char** args, int joins, const char* path){
 			dup2(in, 0);	
 		}
 
-		execvp(args[0], args);
+		execParams(args, spaces, "\0");
+
+//		execvp(args[0], args);
 	}
 	wait();
 	printf("\n");
@@ -246,8 +252,9 @@ void execParams(const char** args, int spaces, const char* path){
 		dup2(redirect, 1);
 	}
 
-	if(strcmp(cargs[0], "nl") == 0) commandNl(cargs);
-	if(strcmp(cargs[0], "mv") == 0) commandMv(cargs);
+	if(strcmp(cargs[0], "nl") == 0) commandNl(words, cargs);
+	else if(strcmp(cargs[0], "mv") == 0) commandMv(cargs);
+	else if(strcmp(cargs[0], "cd") == 0) commandCd(cargs);
 	else {
 		int totalSize = 0;
 

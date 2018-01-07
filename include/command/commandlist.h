@@ -26,6 +26,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include "commandlist.h"
 #include "history.h"
@@ -33,7 +34,7 @@
 
 
 void commandExit();
-void commandNl(const char* args[128]);
+void commandNl(int argc, const char* args[128]);
 void commandMv(const char* args[128]);
 
 
