@@ -34,8 +34,8 @@
 
 
 void commandExit();
-void commandNl(int argc, const char* args[128]);
-void commandMv(const char* args[128]);
+int commandNl(int argc, const char* args[128]);
+int commandMv(int argc, const char* args[128]);
 
 
 #endif // COMMAND_LIST_H

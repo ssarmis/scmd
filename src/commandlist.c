@@ -21,7 +21,7 @@ void commandExit(){
 	exit(0);
 }
 
-void commandNl(int argc, const char* args[128]){
+int commandNl(int argc, const char* args[128]){
 
 	char sep = '\t';
 
@@ -33,6 +33,10 @@ void commandNl(int argc, const char* args[128]){
 
 		int fd = open(args[argc - 1], O_RDONLY);
 
+		if(fd == -1){
+			return errno;
+		}
+
 		char* buffer = (char*)malloc(MAX_FILE_SIZE * sizeof(char));
 
 		int rd = 0;
@@ -40,7 +44,14 @@ void commandNl(int argc, const char* args[128]){
 		while((rd = read(fd, buffer, MAX_FILE_SIZE)) > 0){
 			buffer[rd] = 0;
 		}
+
 		close(fd);
+
+		#if TRY_HARD
+			if(rd <= 0){
+				return errno;		
+			}
+		#endif
 
 		buffer = strtok(buffer, "\n");
 		int count = 0;
@@ -51,28 +62,76 @@ void commandNl(int argc, const char* args[128]){
 			buffer = strtok(NULL, "\n");
 		}
 	} else {
-		printf("nl: not enough parameters provided.");	
+		printf("nl: not enough parameters provided.\n");	
+		return -1;
 	}
+	return 0;
 
 }
 
-void commandMv(const char* args[128]){
+int commandMv(int argc, const char* args[128]){
 	
-	int src;
-	int dest;
+	
+	if(argc > 2){
+		char* src = args[argc - 2];
+		char* dest = args[argc - 1];
+		int needPrompt = 0;
+		#if 0
+		src = open(args[1], O_RDONLY);
+		dest = open(args[2], O_TRUNC | O_CREAT | O_RDWR, S_IWUSR);
+		#endif 
+		
+		if(args[1][0] == '-'){
+			if(args[1][1] == 'i'){
+				needPrompt = 1;
+			}
+		}
 
-	src = open(args[1], O_RDONLY);
-	dest = open(args[2], O_TRUNC | O_CREAT | O_RDWR, S_IWUSR);
+		if(needPrompt){
+			if(access(dest, F_OK) != -1){
+				printf("File already exists, do you wish to continue ? [y/n]\n");
+				char c = getchar();
+				switch(c){
+					case 'n':
+						return 0;
+						break;
+					case 'y':
+
+						if(rename(src, dest) == -1){
+							return errno;
+						}
+						unlink(src);
+
+						break;
+					default:
+						printf("Maybe next time choose a valid response? Assumed 'n'.\n");
+						return 0;
+						break;
+				}
+
+			} else {
+				if(rename(src, dest) == -1){
+					return errno;
+				}
+				unlink(src);
+			}
+		} else {
+			if(rename(src, dest) == -1){
+				return errno;
+			}
+			unlink(src);
+		}
 	
-	if(rename(src, dest) == -1){
-		printf("%d\n", errno);
+		#if 0
+		close(src);
+		close(dest);
+		#endif 
+	} else {
+		printf("mv: not enough parameters provided.\n");
+		return -1;	
 	}
-
-	unlink(src);
-
-	close(src);
-	close(dest);
-
+	
+	return 0;
 }
 
 void commandCd(const char* args[128]){

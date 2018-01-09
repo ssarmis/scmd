@@ -252,10 +252,23 @@ void execParams(const char** args, int spaces, const char* path){
 		dup2(redirect, 1);
 	}
 
-	if(strcmp(cargs[0], "nl") == 0) commandNl(words, cargs);
-	else if(strcmp(cargs[0], "mv") == 0) commandMv(cargs);
-	else if(strcmp(cargs[0], "cd") == 0) commandCd(cargs);
-	else {
+	if(strcmp(cargs[0], "nl") == 0) {
+
+		int suc = commandNl(words, cargs);
+	
+		printf("Executed with a returned code: %d\n", suc);
+
+	} else if(strcmp(cargs[0], "mv") == 0) {
+
+		int suc = commandMv(words, cargs);
+
+		printf("Executed with a returned code: %d\n", suc);
+
+	} else if(strcmp(cargs[0], "cd") == 0) {
+
+		commandCd(cargs);
+
+	} else {
 		int totalSize = 0;
 
 		for(int i = 0; i < words; i++){
