@@ -17,10 +17,14 @@
 
 
 #include <readline/readline.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <sys/types.h>
-#include <arpa/inet.h>
+
+#ifdef USING_NETWORK
+	#include <sys/socket.h>
+	#include <netinet/in.h>
+	#include <sys/types.h>
+	#include <arpa/inet.h>
+#endif // USING_NETWORK
+
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>

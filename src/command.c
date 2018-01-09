@@ -142,7 +142,7 @@ void execInChain(const char** args, int joins, const char* path){
 	int cmdIndex;
 	
 	if(path[0] != 0){
-		redirect = open(path, O_TRUNC | O_CREAT | O_RDWR);
+		redirect = open(path, O_TRUNC | O_CREAT | O_RDWR, 0666);
 	}
 	
 	if(fork() == 0){
@@ -247,7 +247,7 @@ void execParams(const char** args, int spaces, const char* path){
 	int saved;	
 
 	if(path[0] != 0){
-		redirect = open(path, O_TRUNC | O_CREAT | O_RDWR);
+		redirect = open(path, O_TRUNC | O_CREAT | O_RDWR, 0666);
 		saved = dup(1);
 		dup2(redirect, 1);
 	}
