@@ -24,11 +24,26 @@ void commandExit(){
 int commandNl(int argc, const char* args[128]){
 
 	char sep = '\t';
+	char* delimitator = (char*)malloc(2 * sizeof(char));
+
+	delimitator[0] = '\n';
+	delimitator[1] = '\0';
 
 	if(argc > 1){
-		if(args[1][0] == '-'){
-			if(args[1][1] == 's')
-				sep = args[1][2];	
+
+		for(int i = 1; i < argc - 1; i++){
+			if(args[i][0] == '-'){
+				switch(args[i][1]){
+					case 's':
+						sep = args[i][2];
+						break;
+					case 'd':
+						delimitator[0] = args[i][2];
+						break;
+					default:
+						break;
+				}
+			} 
 		}
 
 		int fd = open(args[argc - 1], O_RDONLY);
@@ -53,13 +68,13 @@ int commandNl(int argc, const char* args[128]){
 			}
 		#endif
 
-		buffer = strtok(buffer, "\n");
+		buffer = strtok(buffer, delimitator);
 		int count = 0;
 		while(buffer != NULL){
 	
 			printf("%d%c%s\n", count++, sep, buffer);		
 	
-			buffer = strtok(NULL, "\n");
+			buffer = strtok(NULL, delimitator);
 		}
 	} else {
 		printf("nl: not enough parameters provided.\n");	
