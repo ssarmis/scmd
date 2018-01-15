@@ -37,9 +37,11 @@ int commandNl(int argc, const char* args[128]){
 					case 's':
 						sep = args[i][2];
 						break;
+
 					case 'd':
 						delimitator[0] = args[i][2];
 						break;
+
 					default:
 						break;
 				}
@@ -62,7 +64,7 @@ int commandNl(int argc, const char* args[128]){
 
 		close(fd);
 
-		#if TRY_HARD
+		#ifdef TRY_HARD
 			if(rd <= 0){
 				return errno;		
 			}
@@ -88,59 +90,148 @@ int commandMv(int argc, const char* args[128]){
 	
 	
 	if(argc > 2){
+		int options = 0;
 		char* src = args[argc - 2];
 		char* dest = args[argc - 1];
 		int needPrompt = 0;
-		#if 0
-		src = open(args[1], O_RDONLY);
-		dest = open(args[2], O_TRUNC | O_CREAT | O_RDWR, S_IWUSR);
-		#endif 
-		
-		if(args[1][0] == '-'){
-			if(args[1][1] == 'i'){
-				needPrompt = 1;
-			}
+		int noOverride = 0;
+		int moveMultiple = 0;
+
+
+		for(int i = 1; i < argc - 2; i++){
+			if(args[i][0] == '-'){
+				switch(args[i][1]){
+					case 'i':
+						options++;
+						needPrompt = 1;
+						break;
+
+					case 'n':
+						options++;
+						noOverride = 1;
+						break;
+
+					case 't':
+						options++;
+						moveMultiple = 1;
+						break;
+
+					default:
+						printf("Can you at least provide a valid option ??\n");
+						break;
+				}
+			} 
 		}
 
-		if(needPrompt){
-			if(access(dest, F_OK) != -1){
-				printf("File already exists, do you wish to continue ? [y/n]\n");
-				char c = getchar();
-				switch(c){
-					case 'n':
-						return 0;
-						break;
-					case 'y':
+		if(!moveMultiple){
+			if(needPrompt){
+				if(access(dest, F_OK) != -1){
+					printf("File already exists, do you wish to continue ? [y/n]\n");
+					char c = getchar();
+					switch(c){
+						case 'n':
+							return 0;
+							break;
+						case 'y':
 
+							if(rename(src, dest) == -1){
+								return errno;
+							}
+							unlink(src);
+
+							break;
+						default:
+							printf("Maybe next time choose a valid response? Assumed 'n'.\n");
+							return 0;
+							break;
+					}
+
+				} else {
+					if(rename(src, dest) == -1){
+						return errno;
+					}
+					unlink(src);
+				}
+			} else {
+				if(!noOverride){
+					if(rename(src, dest) == -1){
+						return errno;
+					}
+					unlink(src);
+				} else {
+					if(access(dest, F_OK) != -1){
+						printf("There is already an existing file, did not move it.\n");
+					} else {
 						if(rename(src, dest) == -1){
 							return errno;
 						}
 						unlink(src);
-
-						break;
-					default:
-						printf("Maybe next time choose a valid response? Assumed 'n'.\n");
-						return 0;
-						break;
+					}
 				}
-
-			} else {
-				if(rename(src, dest) == -1){
-					return errno;
-				}
-				unlink(src);
 			}
 		} else {
-			if(rename(src, dest) == -1){
-				return errno;
-			}
-			unlink(src);
-		}
+
+			///////////////////////////////////////
+			// This implementation hurts my eyes...
+			///////////////////////////////////////
+			for(int i = options + 1; i < argc - 1; i++){
+				
+				src = args[i];
+				char* newDest = (char*)malloc((strlen(dest) + strlen(src)) * sizeof(char));
+
+				strcpy(newDest, dest);
+				strcat(newDest, src);		
 	
-		#if 0
-		close(src);
-		close(dest);
-		#endif 
+				if(needPrompt){
+					if(access(dest, F_OK) != -1){
+						printf("File already exists, do you wish to continue ? [y/n]\n");
+						char c = getchar();
+						switch(c){
+							case 'n':
+								return 0;
+								break;
+							case 'y':
+
+								if(rename(src, newDest) == -1){
+									return errno;
+								}
+								unlink(src);
+
+								break;
+							default:
+								printf("Maybe next time choose a valid response? Assumed 'n'.\n");
+								return 0;
+								break;
+						}
+
+					} else {
+						if(rename(src, newDest) == -1){
+							return errno;
+						}
+						unlink(src);
+					}
+				} else {
+					if(!noOverride){
+						if(rename(src, newDest) == -1){
+							return errno;
+						}
+						unlink(src);
+					} else {
+						if(access(newDest, F_OK) != -1){
+							printf("There is already an existing file, did not move it.\n");
+						} else {
+							if(rename(src, newDest) == -1){
+								return errno;
+							}
+							unlink(src);
+						}
+					}
+				}
+			free(newDest);		
+
+			}
+		}
+		///////////////////////////////////////
 	} else {
 		printf("mv: not enough parameters provided.\n");
 		return -1;	

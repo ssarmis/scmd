@@ -275,7 +275,6 @@ void execParams(const char** args, int spaces, const char* path){
 			totalSize += strlen(cargs[i]);
 		}
 
-
 		char* cmd = (char*)malloc(totalSize * sizeof(char));
 		memset(cmd, 0, (totalSize - 1) * sizeof(char));
 
