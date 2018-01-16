@@ -78,6 +78,9 @@ int commandNl(int argc, const char* args[128]){
 	
 			buffer = strtok(NULL, delimitator);
 		}
+
+		free(buffer);
+
 	} else {
 		printf("nl: not enough parameters provided.\n");	
 		return -1;
@@ -126,8 +129,10 @@ int commandMv(int argc, const char* args[128]){
 		if(!moveMultiple){
 			if(needPrompt){
 				if(access(dest, F_OK) != -1){
-					printf("File already exists, do you wish to continue ? [y/n]\n");
+					printf("%s: File already exists, do you wish to continue ? [y/n]\n", dest);
 					char c = getchar();
+					if(c != '\n')
+						getchar();
 					switch(c){
 						case 'n':
 							return 0;
@@ -160,7 +165,7 @@ int commandMv(int argc, const char* args[128]){
 					unlink(src);
 				} else {
 					if(access(dest, F_OK) != -1){
-						printf("There is already an existing file, did not move it.\n");
+						printf("%s: There is already an existing file, did not move it.\n", dest);
 					} else {
 						if(rename(src, dest) == -1){
 							return errno;
@@ -184,8 +189,10 @@ int commandMv(int argc, const char* args[128]){
 	
 				if(needPrompt){
 					if(access(dest, F_OK) != -1){
-						printf("File already exists, do you wish to continue ? [y/n]\n");
+						printf("%s: File already exists, do you wish to continue ? [y/n]\n", newDest);
 						char c = getchar();
+						if(c != '\n')
+							getchar();
 						switch(c){
 							case 'n':
 								return 0;
@@ -203,7 +210,6 @@ int commandMv(int argc, const char* args[128]){
 								return 0;
 								break;
 						}
-
 					} else {
 						if(rename(src, newDest) == -1){
 							return errno;
@@ -218,7 +224,7 @@ int commandMv(int argc, const char* args[128]){
 						unlink(src);
 					} else {
 						if(access(newDest, F_OK) != -1){
-							printf("There is already an existing file, did not move it.\n");
+							printf("%s: There is already an existing file, did not move it.\n", newDest);
 						} else {
 							if(rename(src, newDest) == -1){
 								return errno;
